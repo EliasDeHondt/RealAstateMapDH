@@ -1,127 +1,131 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>Our Real Estate Portfolio</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <!-- Geocoder (address search) CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
-  <style>
-    body { margin:0; padding:0; font-family: Arial, sans-serif; }
-    #map { height: 100vh; width: 100vw; }
-    .title-box {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background: rgba(255,255,255,0.9);
-      padding: 12px 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-      z-index: 1000;
-      pointer-events: none;
-    }
-    .title-box h1 { margin:0; font-size: 24px; color: #222; }
-    .title-box p  { margin:5px 0 0; color: #555; }
-  </style>
-</head>
-<body>
+    <head>
+        <meta charset="utf-8">
+        <title>DH Group Real Estate</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+        <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+        <style>
+            body { margin:0; padding:0; font-family: Arial, sans-serif; }
+            #map { height: 100vh; width: 100vw; }
+            .title-box {
+                position: absolute;
+                top: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(255,255,255,0.9);
+                padding: 12px 20px;
+                border-radius: 8px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+                z-index: 1000;
+                pointer-events: none;
+                text-align: center;
+                min-width: 150px;
+            }
+            .title-box h1 { margin:0; font-size: 24px; color: #222222; }
+            .leaflet-popup-content { min-width: 250px; }
+            .copy-btn { margin-top: 10px; padding: 6px 12px; background: #4f94f0; color: white; border: none; border-radius: 4px; cursor: pointer; }
+            .copy-btn:hover { background: #4f94e0; }
+        </style>
+    </head>
+    <body>
+        <div class="title-box">
+            <h1>DH Group</h1>
+        </div>
+        <div id="map"></div>
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+        <script>
+            const companyColor = '#4f94f0';
+            const borderColor   = '#6c757d';
+            const map = L.map('map').setView([50.5, 5.0], 8);
 
-<div class="title-box">
-  <h1>Our Real Estate Portfolio</h1>
-  <p>Owned & managed properties</p>
-</div>
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
 
-<div id="map"></div>
+            L.Control.geocoder({
+                defaultMarkGeocode: false,
+                placeholder: 'Search for an address…'
+            }).addTo(map);
 
-<!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<!-- Geocoder JS -->
-<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+            const propertyLayer = L.featureGroup().addTo(map);
 
-<script>
-// ---------- CHANGE THESE COLORS TO MATCH eliasdh.com ----------
-const companyColor = '#4f94f0';   // main fill color (e.g. your primary brand color)
-const borderColor   = '#6c757d';   // border / outline color
-// --------------------------------------------------------------
+            const properties = [
+                {
+                    type: 'point',
+                    name: 'Headquarters Brussels',
+                    category: 'office',
+                    status: 'Privé eigendom',
+                    address: 'Rue de la Loi 16, 1000 Brussels, Belgium',
+                    coords: [50.8503, 4.3517]
+                },
+                {
+                    type: 'point',
+                    name: 'Apartment Ghent',
+                    category: 'residential',
+                    status: 'Verhuurd',
+                    address: 'Sint-Pietersnieuwstraat 25, 9000 Ghent, Belgium',
+                    coords: [51.0575, 3.7204]
+                },
+                {
+                    type: 'polygon',
+                    name: 'Agricultural Field near Antwerp',
+                    category: 'marketing',
+                    status: 'Te koop',
+                    address: 'Near E19 Highway, 2000 Antwerp, Belgium',
+                    coords: [
+                    [51.260, 4.350],
+                    [51.260, 4.500],
+                    [51.300, 4.500],
+                    [51.300, 4.350]
+                    ]
+                }
+            ];
 
-const map = L.map('map').setView([50.5, 5.0], 8); // default centre (Belgium area)
+            properties.forEach(prop => {
+                let layer;
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '&copy; OpenStreetMap contributors'
-}).addTo(map);
+                if (prop.type === 'point') {
+                    layer = L.circleMarker(prop.coords, {
+                    radius: 12,
+                    color: borderColor,
+                    weight: 3,
+                    fillColor: companyColor,
+                    fillOpacity: 0.8
+                    });
+                } else if (prop.type === 'polygon') {
+                    layer = L.polygon(prop.coords, {
+                    color: borderColor,
+                    weight: 4,
+                    fillColor: companyColor,
+                    fillOpacity: 0.5
+                    });
+                }
 
-// Address search box
-L.Control.geocoder({
-  defaultMarkGeocode: false,
-  placeholder: 'Search for an address…'
-}).addTo(map);
+                if (layer) {
+                    const propInfoText = `Name: ${prop.name}\nCategory: ${prop.category}\nStatus: ${prop.status}\nAddress: ${prop.address}\n`;
+                    const fullPopup = `
+                        <b>${prop.name}</b><br>
+                        Category: ${prop.category}<br>
+                        Status: ${prop.status}<br>
+                        Address: ${prop.address}<br>
+                        <div style="margin-top: 10px;">
+                            <button class="copy-btn" onclick="copyPropInfo('${propInfoText.replace(/\n/g, '\\n')}')">Copy Info</button>
+                        </div>
+                    `;
+                    layer.addTo(propertyLayer).bindPopup(fullPopup);
+                }
+            });
 
-// Group for all properties (so we can auto-zoom to them)
-const propertyLayer = L.featureGroup().addTo(map);
+            function copyPropInfo(text) {
+                navigator.clipboard.writeText(text.replace(/\\n/g, '\n')).then(() => alert('Property info copied to clipboard!')).catch(err => alert('Failed to copy: ' + err));
+            }
 
-// Your properties go here ---------------------------------------
-const properties = [
-  {
-    type: 'point',
-    name: 'Headquarters Brussels',
-    coords: [50.8503, 4.3517],
-    popup: '<b>Headquarters Brussels</b><br>Owned office building<br>Status: In possession'
-  },
-  {
-    type: 'point',
-    name: 'Apartment Ghent',
-    coords: [51.0575, 3.7204],
-    popup: '<b>Apartment Ghent</b><br>Rented to tenants<br>Status: Leased'
-  },
-  {
-    type: 'polygon',
-    name: 'Agricultural Field near Antwerp',
-    coords: [   // list of [lat, lng] points – order matters (clockwise/counter-clockwise)
-      [51.260, 4.350],
-      [51.260, 4.500],
-      [51.300, 4.500],
-      [51.300, 4.350]
-    ],
-    popup: '<b>Field near Antwerp</b><br>120 hectares<br>Status: Owned'
-  }
-  // Add more objects here – copy/paste and edit!
-  // Example point: {type:'point', name:'My House', coords:[50.1234, 4.5678], popup:'...'}
-  // Example polygon: {type:'polygon', name:'Big Parcel', coords:[[lat1,lng1],[lat2,lng2],...], popup:'...'}
-];
-// --------------------------------------------------------------
-
-properties.forEach(prop => {
-  let layer;
-  if (prop.type === 'point') {
-    layer = L.circleMarker(prop.coords, {
-      radius: 12,
-      color: borderColor,
-      weight: 3,
-      fillColor: companyColor,
-      fillOpacity: 0.8
-    });
-  } else if (prop.type === 'polygon') {
-    layer = L.polygon(prop.coords, {
-      color: borderColor,
-      weight: 4,
-      fillColor: companyColor,
-      fillOpacity: 0.5
-    });
-  }
-
-  if (layer) {
-    layer.addTo(propertyLayer)
-          .bindPopup(prop.popup);
-  }
-});
-
-// Auto-zoom to show all properties (with a little padding)
-if (properties.length > 0) {
-  map.fitBounds(propertyLayer.getBounds().pad(0.3));
-}
-</script>
-
-</body>
+            if (properties.length > 0) {
+                map.fitBounds(propertyLayer.getBounds().pad(0.3));
+            }
+        </script>
+    </body>
 </html>
